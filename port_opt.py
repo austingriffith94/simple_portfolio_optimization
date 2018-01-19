@@ -83,7 +83,7 @@ main.columns = ['Avg','Std','Weights']
 
 # save values to csv
 cov.to_csv(name+'/CovarianceRet.csv')
-main.to_csv(name+'/MainRet.csv')
+main.to_csv(name+'/MinRiskPort.csv')
 
 #%%
 # minimum risk values
@@ -133,6 +133,25 @@ frontier.to_csv(name+'/EffFrontier.csv')
 frontier['Sharpe'] = frontier['Returns']/frontier['Risk']
 idx = frontier['Sharpe'].max()
 sharpeMax = frontier.loc[frontier['Sharpe'] == idx]
+sharpeMax = sharpeMax.reset_index(drop=True)
+
+# find max sharpe weights
+target.rhs = sharpeMax['Returns'][0]
+model.optimize()
+n = 0
+sharpe_weights = {}
+for v in variables:
+    sharpe_weights.update({tickers[n]:v.x})
+    n = n + 1
+sharpe_weights = pd.DataFrame([sharpe_weights])
+sharpe_weights = sharpe_weights.transpose()
+sharpe_weights.columns = ['Weights']
+
+# display and save max sharpe values
+print('\nMaximum Sharpe Ratio')
+print(sharpeMax)
+print(sharpe_weights)
+sharpe_weights.to_csv(name+'/MaxSharpeWeights.csv')
 
 #%%
 # plot of the efficient frontier from Rmin to Rmax
