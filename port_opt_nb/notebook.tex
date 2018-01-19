@@ -445,7 +445,7 @@ Name: Weights, dtype: float64
         
         \PY{c+c1}{\PYZsh{} save values to csv}
         \PY{n}{cov}\PY{o}{.}\PY{n}{to\PYZus{}csv}\PY{p}{(}\PY{n}{name}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{/CovarianceRet.csv}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
-        \PY{n}{main}\PY{o}{.}\PY{n}{to\PYZus{}csv}\PY{p}{(}\PY{n}{name}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{/MainRet.csv}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+        \PY{n}{main}\PY{o}{.}\PY{n}{to\PYZus{}csv}\PY{p}{(}\PY{n}{name}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{/MinRiskPort.csv}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
 \end{Verbatim}
 
 
@@ -465,9 +465,9 @@ Name: Weights, dtype: float64
 
     \begin{Verbatim}[commandchars=\\\{\}]
 
-Minimized Portfolio Variance : 0.0005231075180047175
-Volatility : 0.022871543848300174
-Expected Return (Rmin) : 0.008097325139818718
+Minimized Portfolio Variance : 0.0005231075180047144
+Volatility : 0.022871543848300105
+Expected Return (Rmin) : 0.008097325139818624
 
     \end{Verbatim}
 
@@ -562,7 +562,52 @@ Efficient Frontier
     \end{Verbatim}
 
     \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}10}]:} \PY{c+c1}{\PYZsh{} plot of the efficient frontier from Rmin to Rmax}
+{\color{incolor}In [{\color{incolor}10}]:} \PY{c+c1}{\PYZsh{} retrieve maximum sharpe value along efficient frontier}
+         \PY{n}{frontier}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Sharpe}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{n}{frontier}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Returns}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{/}\PY{n}{frontier}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Risk}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+         \PY{n}{idx} \PY{o}{=} \PY{n}{frontier}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Sharpe}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{max}\PY{p}{(}\PY{p}{)}
+         \PY{n}{sharpeMax} \PY{o}{=} \PY{n}{frontier}\PY{o}{.}\PY{n}{loc}\PY{p}{[}\PY{n}{frontier}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Sharpe}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{==} \PY{n}{idx}\PY{p}{]}
+         \PY{n}{sharpeMax} \PY{o}{=} \PY{n}{sharpeMax}\PY{o}{.}\PY{n}{reset\PYZus{}index}\PY{p}{(}\PY{n}{drop}\PY{o}{=}\PY{k+kc}{True}\PY{p}{)}
+         
+         \PY{c+c1}{\PYZsh{} find max sharpe weights}
+         \PY{n}{target}\PY{o}{.}\PY{n}{rhs} \PY{o}{=} \PY{n}{sharpeMax}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Returns}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}
+         \PY{n}{model}\PY{o}{.}\PY{n}{optimize}\PY{p}{(}\PY{p}{)}
+         \PY{n}{n} \PY{o}{=} \PY{l+m+mi}{0}
+         \PY{n}{sharpe\PYZus{}weights} \PY{o}{=} \PY{p}{\PYZob{}}\PY{p}{\PYZcb{}}
+         \PY{k}{for} \PY{n}{v} \PY{o+ow}{in} \PY{n}{variables}\PY{p}{:}
+             \PY{n}{sharpe\PYZus{}weights}\PY{o}{.}\PY{n}{update}\PY{p}{(}\PY{p}{\PYZob{}}\PY{n}{tickers}\PY{p}{[}\PY{n}{n}\PY{p}{]}\PY{p}{:}\PY{n}{v}\PY{o}{.}\PY{n}{x}\PY{p}{\PYZcb{}}\PY{p}{)}
+             \PY{n}{n} \PY{o}{=} \PY{n}{n} \PY{o}{+} \PY{l+m+mi}{1}
+         \PY{n}{sharpe\PYZus{}weights} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{DataFrame}\PY{p}{(}\PY{p}{[}\PY{n}{sharpe\PYZus{}weights}\PY{p}{]}\PY{p}{)}
+         \PY{n}{sharpe\PYZus{}weights} \PY{o}{=} \PY{n}{sharpe\PYZus{}weights}\PY{o}{.}\PY{n}{transpose}\PY{p}{(}\PY{p}{)}
+         \PY{n}{sharpe\PYZus{}weights}\PY{o}{.}\PY{n}{columns} \PY{o}{=} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Weights}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+         
+         \PY{c+c1}{\PYZsh{} display and save max sharpe values}
+         \PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{Maximum Sharpe Ratio}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n+nb}{print}\PY{p}{(}\PY{n}{sharpeMax}\PY{p}{)}
+         \PY{n+nb}{print}\PY{p}{(}\PY{n}{sharpe\PYZus{}weights}\PY{p}{)}
+         \PY{n}{sharpe\PYZus{}weights}\PY{o}{.}\PY{n}{to\PYZus{}csv}\PY{p}{(}\PY{n}{name}\PY{o}{+}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{/MaxSharpeWeights.csv}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+
+Maximum Sharpe Ratio
+    Returns      Risk    Sharpe
+0  0.025621  0.033507  0.764654
+            Weights
+AMZN   3.251826e-01
+AXP    2.007443e-08
+BA     2.485391e-08
+GOOGL  1.306530e-07
+HON    1.396345e-07
+KO     5.939870e-08
+MSFT   7.867153e-02
+SPY    1.981066e-08
+UNH    5.961454e-01
+
+    \end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}12}]:} \PY{c+c1}{\PYZsh{} plot of the efficient frontier from Rmin to Rmax}
          \PY{c+c1}{\PYZsh{} initialize plot, set labels}
          \PY{n}{fig}\PY{p}{,} \PY{n}{ax} \PY{o}{=} \PY{n}{plt}\PY{o}{.}\PY{n}{subplots}\PY{p}{(}\PY{n}{nrows}\PY{o}{=}\PY{l+m+mi}{1}\PY{p}{,}\PY{n}{ncols}\PY{o}{=}\PY{l+m+mi}{1}\PY{p}{)}
          \PY{n}{fig}\PY{o}{.}\PY{n}{set\PYZus{}size\PYZus{}inches}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{9}\PY{p}{)}
@@ -589,6 +634,10 @@ Efficient Frontier
          \PY{n}{ax}\PY{o}{.}\PY{n}{scatter}\PY{p}{(}\PY{n}{x}\PY{o}{=}\PY{n}{min\PYZus{}vol}\PY{p}{,}\PY{n}{y}\PY{o}{=}\PY{n}{Rmin}\PY{p}{,}\PY{n}{color}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{blue}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Optimal}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
          \PY{n}{ax}\PY{o}{.}\PY{n}{annotate}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Min. Risk}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{p}{(}\PY{n}{min\PYZus{}vol}\PY{p}{,}\PY{n}{Rmin}\PY{p}{)}\PY{p}{)}
          
+         \PY{c+c1}{\PYZsh{} show maximum sharpe value}
+         \PY{n}{ax}\PY{o}{.}\PY{n}{scatter}\PY{p}{(}\PY{n}{x}\PY{o}{=}\PY{n}{sharpeMax}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Risk}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,}\PY{n}{y}\PY{o}{=}\PY{n}{sharpeMax}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Returns}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,}\PY{n}{color}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{red}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{n}{label}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Max Sharpe}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax}\PY{o}{.}\PY{n}{annotate}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Max Sharpe}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{p}{(}\PY{n}{sharpeMax}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Risk}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,}\PY{n}{sharpeMax}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Returns}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+         
          \PY{c+c1}{\PYZsh{} additional edits to the graph}
          \PY{n}{ax}\PY{o}{.}\PY{n}{grid}\PY{p}{(}\PY{p}{)}
          \PY{n}{ax}\PY{o}{.}\PY{n}{legend}\PY{p}{(}\PY{n}{loc}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{upper left}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
@@ -597,7 +646,7 @@ Efficient Frontier
 
 
     \begin{center}
-    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_9_0.png}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_10_0.png}
     \end{center}
     { \hspace*{\fill} \\}
     
