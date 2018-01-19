@@ -129,6 +129,12 @@ print(frontier)
 frontier.to_csv(name+'/EffFrontier.csv')
 
 #%%
+# retrieve maximum sharpe value along efficient frontier
+frontier['Sharpe'] = frontier['Returns']/frontier['Risk']
+idx = frontier['Sharpe'].max()
+sharpeMax = frontier.loc[frontier['Sharpe'] == idx]
+
+#%%
 # plot of the efficient frontier from Rmin to Rmax
 # initialize plot, set labels
 fig, ax = plt.subplots(nrows=1,ncols=1)
@@ -155,6 +161,10 @@ for stock in tickers:
 # show the minimum risk portfolio
 ax.scatter(x=min_vol,y=Rmin,color='blue',label='Optimal')
 ax.annotate('Min. Risk',(min_vol,Rmin))
+
+# show maximum sharpe value
+ax.scatter(x=sharpeMax['Risk'],y=sharpeMax['Returns'],color='red',label='Max Sharpe')
+ax.annotate('Max Sharpe',(sharpeMax['Risk'],sharpeMax['Returns']))
 
 # additional edits to the graph
 ax.grid()
